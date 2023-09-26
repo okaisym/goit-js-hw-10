@@ -1,24 +1,25 @@
-
 import { fetchBreeds, fetchCatByBreed } from "./cat-api";
 
 const selector = document.querySelector('.breed-select');
-// const loaderMessage = document.querySelector('.loader');
-// const errorMessage = document.querySelector('.error');
+const loaderMessage = document.querySelector('.loader');
+const errorMessage = document.querySelector('.error');
 const divCat = document.querySelector('.cat-info');
-let breedsData
+
 
 fetchBreeds()
-.then(breeds => {
-    breedsData = breeds;
-    const catInfo = breeds.map(({id, name}) => {
-        return {value: id, text: name}
-    })
-    catInfo.unshift({value: "", text: 'Select a breed', disabled: true})
-  })
-.catch(error =>
-    console.log(error));
+.then(breedsArray => {
+    if (breedsArray) {
+                breedsArray.forEach(({id, name}) => {
+                const optionMarkup = `<option value=${id}>${name}</option>`;
+                return selector.insertAdjacentHTML('beforeend', optionMarkup);
+            });
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+        });
 
-selector.addEventListener('change', onSelect)
+selector.addEventListener('change', onSelect);
 
 function onSelect(event) {
     const selectedBreedId = event.target.value;
@@ -27,19 +28,20 @@ function onSelect(event) {
       }
 
     fetchCatByBreed(selectedBreedId) 
-    .then(breedInfo => {
-        const breedTextContent = breedsData.find(breed => breed.id === selectedBreedId);
+
+    .then((breedInfo) => {
+        const {image: {url}, breeds} = breedInfo[0];
     divCat.innerHTML = `<div class="cat-info">
-    <img src="${breedInfo.url}" alt="${breedTextContent.name}" width="800", height="450"/>
-    <h2>${breedTextContent.name}</h2>
-    <p>${breedTextContent.description}</p>
-    <p>${breedTextContent.temperament}</p>
+    <img src="${url}" alt="${breeds[0].name}" width="800", height="450"/>
+    <h2>${breeds[0].name}</h2>
+    <p>${breeds[0].description}</p>
+    <p>Temperament: ${breeds[0].temperament}</p>
           </div>`;
         }
 )
-.catch(error => 
-    console.log(error));
-};
-
+.catch((error) => {
+    console.error(error);
+});
+}
 
     
